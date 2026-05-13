@@ -285,7 +285,7 @@ textarea{resize:none;font-family:'DM Mono',monospace}button{font-family:'Bebas N
       <circle class="rest-ring-bg" cx="95" cy="95" r="83"/>
       <circle id="rest-arc" class="rest-ring-fill" cx="95" cy="95" r="83" stroke-dasharray="521" stroke-dashoffset="0"/>
     </svg>
-    <div class="rest-count"><div class="rest-secs" id="rest-secs">90</div><div class="rest-label">SECONDS</div></div>
+    <div class="rest-count"><div class="rest-secs" id="rest-secs">120</div><div class="rest-label">SECONDS</div></div>
   </div>
   <div class="rest-preset-row">
     <div class="rest-preset" onclick="setRestTime(30)">30s</div>
@@ -300,6 +300,19 @@ textarea{resize:none;font-family:'DM Mono',monospace}button{font-family:'Bebas N
     <button class="rest-ctrl-btn" onclick="adjustRest(+15)">+15s</button>
   </div>
   <button class="rest-skip" id="rest-skip-btn" onclick="closeRest()">SKIP REST ▶</button>
+  <button onclick="minimizeRest()" style="padding:8px 20px;background:transparent;border:1px solid #333;border-radius:4px;color:#555;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer">⬇ BACKGROUND</button>
+</div>
+
+<!-- MINI REST BAR (background mode) -->
+<div id="rest-mini" style="display:none;position:fixed;bottom:calc(var(--safe-bot));left:0;right:0;z-index:400;background:#111;border-top:1px solid #1e1e1e;padding:10px 14px;cursor:pointer" onclick="maximizeRest()">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+    <span id="rest-mini-label" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px">● REST TIMER</span>
+    <span id="rest-mini-secs" style="font-family:'DM Mono',monospace;font-size:16px;letter-spacing:3px">2:00</span>
+    <button onclick="event.stopPropagation();closeRest()" style="background:transparent;border:1px solid #333;color:#555;padding:3px 8px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px">SKIP</button>
+  </div>
+  <div style="height:3px;background:#1a1a1a;border-radius:2px;overflow:hidden">
+    <div id="rest-mini-fill" style="height:100%;border-radius:2px;transition:width .9s linear;width:100%"></div>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -319,7 +332,7 @@ textarea{resize:none;font-family:'DM Mono',monospace}button{font-family:'Bebas N
 // ═══════════════════════════════════════════════════════════
 // EQUIPMENT & MUSCLE OPTIONS
 // ═══════════════════════════════════════════════════════════
-const EQ_OPTIONS=['Barbell','Bench + Barbell','Bench + Dumbbell','Barbell + Squat Rack','Dumbbell','Pulldown System','Leg Extension Machine','Preacher Curl Bench','Bench','Bodyweight','Other'];
+const EQ_OPTIONS=['Barbell','Bench + Barbell','Bench + Dumbbell','Barbell + Squat Rack','Dumbbell','Pulldown System','Landmine','Leg Extension Machine','Preacher Curl Bench','Bench','Bodyweight','Other'];
 const MUSCLE_OPTIONS={push:['CHEST','SHOULDERS','TRICEPS'],pull:['BACK','LATS','BICEPS'],legs:['QUADS','HAMSTRINGS','GLUTES','CALVES','CORE']};
 
 // ═══════════════════════════════════════════════════════════
@@ -337,6 +350,7 @@ const LIBRARY = {
       {id:'lb_ifl', name:'Incline Dumbbell Fly',      eq:'Bench + Dumbbell', desc:'Targets the upper pec with the fly motion on an incline.',steps:['Set bench to 30–45°. Lie back with dumbbells pressed above upper chest.','Lower in a wide arc, maintaining slight elbow bend.','Deep stretch at bottom, then squeeze upper chest to close.']},
       {id:'lb_cgb', name:'Close-Grip Bench Press',    eq:'Bench + Barbell',  desc:'Narrower grip shifts emphasis from chest to triceps while still working the inner chest.',steps:['Lie flat, grip bar at shoulder width or slightly inside.','Lower bar to lower chest, keeping elbows tucked close to body.','Press up, squeezing triceps at lockout.']},
       {id:'lb_pp',  name:'Push-Up',                   eq:'Bodyweight',       desc:'A fundamental bodyweight pushing movement that builds chest, shoulders, and triceps.',steps:['Set up in plank position, hands just outside shoulder width.','Lower your chest toward the floor, elbows at ~45°.','Push back up to start. Keep core tight throughout.']},
+      {id:'lb_lmc', name:'Landmine Chest Press',       eq:'Landmine',         desc:'Standing or kneeling single-arm press using a landmine for a natural arc that is easy on the shoulder joint.',steps:['Anchor barbell in landmine. Kneel or stand, facing the loaded end.','Hold bar end at chest height, elbow tucked.','Press the bar forward and up, arm fully extending.','Lower slowly and repeat. Switch sides after each set.']},
     ],
     'SHOULDERS':[
       {id:'lb_ohp', name:'Barbell Overhead Press',    eq:'Barbell + Squat Rack', desc:'The primary overhead pressing movement, building front deltoids, upper chest, and triceps.',steps:['Take bar from rack at upper chest height. Step back.','Grip just outside shoulders, bar resting on upper chest.','Press overhead, leaning head back slightly to allow bar path.','Lock out at top, bring head through the \'window\'. Lower under control.']},
@@ -347,6 +361,8 @@ const LIBRARY = {
       {id:'lb_cfp', name:'Cable Face Pull',           eq:'Pulldown System',  desc:'Targets rear deltoids, external rotators, and upper traps. Critical for shoulder health.',steps:['Set cable at face height. Attach rope handle.','Grip ends of rope, step back. Pull to face level.','Elbows flare high and wide, hands end near ears.','Squeeze rear delts and external rotators. Return slowly.']},
       {id:'lb_arn', name:'Arnold Press',              eq:'Dumbbell',         desc:'Named for Arnold Schwarzenegger, this rotation adds front delt work to the standard press.',steps:['Start with dumbbells at chin height, palms facing you.','As you press up, rotate palms outward.','Finish with palms facing forward at top.','Reverse rotation as you lower back to start.']},
       {id:'lb_usr', name:'Upright Row',               eq:'Barbell',          desc:'A compound move hitting medial delts and upper traps. Keep the bar close to the body.',steps:['Grip barbell slightly inside shoulder width, overhand.','Pull bar straight up along your torso, elbows leading high.','Bar reaches upper chest/chin level.','Lower under control.']},
+      {id:'lb_lmp', name:'Landmine Press',             eq:'Landmine',         desc:'Single-arm pressing from a landmine anchor builds shoulder stability and pressing strength at a joint-friendly angle.',steps:['Anchor barbell in landmine. Stand facing the end, feet staggered.','Hold the end of the bar at shoulder height in one hand.','Press up and slightly forward in an arc.','Lower under control. Complete all reps then switch sides.']},
+      {id:'lb_lm2', name:'Landmine Shoulder-to-Shoulder Press',eq:'Landmine',  desc:'Two-handed press alternating side to side, building both shoulders and core stability.',steps:['Anchor barbell in landmine. Stand facing the end.','Hold bar end with both hands, start on one shoulder.','Press the bar up and across to the opposite shoulder.','Alternate side to side for each rep.']},
     ],
     'TRICEPS':[
       {id:'lb_skc', name:'Skull Crushers',            eq:'Bench + Barbell',  desc:'An isolation exercise for the long head of the tricep with a bar lowered toward the forehead.',steps:['Lie flat, grip bar narrow (shoulder width), arms extended over face.','Lower bar toward forehead by bending only at the elbows.','Keep upper arms stationary and vertical.','Extend back to start, squeezing triceps.']},
@@ -368,6 +384,8 @@ const LIBRARY = {
       {id:'lb_scr', name:'Seated Cable Row',          eq:'Pulldown System',  desc:'Horizontal cable row targeting mid-back. Excellent for back thickness.',steps:['Sit at cable row station, feet on platform, slight knee bend.','Grab handle, sit tall.','Pull handle to navel, squeezing shoulder blades.','Extend arms fully between reps for full stretch.']},
       {id:'lb_sal', name:'Straight-Arm Pulldown',     eq:'Pulldown System',  desc:'Isolates the lats without bicep involvement by keeping arms straight throughout.',steps:['Stand facing high cable with straight bar.','Hold bar with slight elbow bend, arms extended above.','Pull bar down in an arc to your thighs, keeping arms straight.','Squeeze lats at bottom. Return slowly.']},
       {id:'lb_shg', name:'Barbell Shrug',             eq:'Barbell',          desc:'Targets the upper trapezius through shoulder elevation.',steps:['Hold barbell in front, arms extended.','Shrug shoulders straight up toward ears.','Hold briefly at top.','Lower slowly, no rolling.']},
+      {id:'lb_lmr', name:'Landmine Row',               eq:'Landmine',         desc:'Plate-loaded landmine row with a neutral grip hits the lats and mid-back with minimal lower back stress.',steps:['Anchor barbell in landmine. Straddle the bar, hinge forward at hips.','Grip the end of the bar with one or both hands.','Row the bar up to your chest, driving the elbow back.','Lower under control to full stretch.']},
+      {id:'lb_lmt', name:'Landmine T-Bar Row',         eq:'Landmine',         desc:'Two-handed landmine row that allows heavy loading for back thickness.',steps:['Anchor barbell. Straddle bar, hip-width stance, hinge to ~45°.','Grip the end of the bar with both hands (use a V-handle or clasp hands).','Pull bar to lower chest, squeezing shoulder blades together.','Lower slowly to full extension.']},
     ],
     'LATS':[
       {id:'lb_wlp', name:'Wide-Grip Lat Pulldown',    eq:'Pulldown System',  desc:'Wide grip lat pulldown emphasizes the upper-outer lats for a wide V-taper.',steps:['Sit, thighs secured. Grip bar wide, overhand.','Lean back slightly, pull bar to upper chest.','Drive elbows down and back, squeezing lats.','Control the bar back up to full arm extension.']},
@@ -418,6 +436,9 @@ const LIBRARY = {
     ],
     'CORE':[
       {id:'lb_plk', name:'Plank Hold',               eq:'Bodyweight',       desc:'Foundational core stability exercise engaging the entire anterior chain.',steps:['Forearms on floor, elbows under shoulders.','Body forms a straight line from head to heels.','Hold without letting hips sag or pike.','Breathe normally throughout.']},
+      {id:'lb_lmsl',name:'Landmine Squat',            eq:'Landmine',         desc:'Goblet-style squat holding the landmine end — great for upright torso and quad loading.',steps:['Anchor barbell. Stand facing the end, hold bar end at chest with both hands.','Feet shoulder-width, toes slightly out.','Squat down, keeping torso upright and elbows inside knees.','Drive through heels to stand.']},
+      {id:'lb_lmro',name:'Landmine Rotation',         eq:'Landmine',         desc:'A powerful anti-rotation core exercise that also trains the obliques and hips through a full swinging arc.',steps:['Anchor barbell in landmine. Stand with feet wide, perpendicular to bar.','Grip end of bar with both hands, arms extended.','Swing bar from one side to the other in a wide arc, pivoting feet.','Control the rotation — don\'t let it yank you.']},
+      {id:'lb_lml', name:'Landmine Lateral Raise',    eq:'Landmine',         desc:'Kneeling or standing lateral raise using the landmine arc for constant tension on the medial delt and obliques.',steps:['Anchor barbell. Kneel sideways to the anchor.','Hold bar end with outer hand at hip height.','Raise bar in an arc up to shoulder height.','Lower under control. Switch sides.']},
       {id:'lb_hkr', name:'Hanging Knee Raises',      eq:'Pulldown System',  desc:'Hanging abdominal exercise. Knees-to-chest version reduces lower back strain.',steps:['Hang from bar or cable tower with overhand grip.','Bring knees up toward chest.','Curl the pelvis at the top for full contraction.','Lower legs under control.']},
       {id:'lb_crn', name:'Cable Crunch',             eq:'Pulldown System',  desc:'Cable provides consistent resistance through the full range of the crunch.',steps:['Kneel facing cable machine, rope at head height.','Pull rope to ears.','Crunch down toward floor, rounding spine.','Feel abs squeeze at bottom, rise slowly.']},
       {id:'lb_abr', name:'Ab Rollout',               eq:'Barbell',          desc:'Advanced core anti-extension exercise using a barbell.',steps:['Kneel, hands on barbell loaded with round plates.','Roll forward, extending body toward floor.','Keep core braced to prevent back from sagging.','Pull back using abs.']},
@@ -545,6 +566,7 @@ const PLAN_META={
 function eqIcon(eq){
   if(eq.includes('Leg Extension')) return '🦵';
   if(eq.includes('Preacher'))      return '💺';
+  if(eq.includes('Landmine'))      return '💥';
   if(eq.includes('Rack'))          return '🏗️';
   if(eq.includes('Barbell'))       return '🏋️';
   if(eq.includes('Dumbbell'))      return '💪';
@@ -578,7 +600,7 @@ function getCustomExercises(){try{return JSON.parse(localStorage.getItem('il_cus
 function saveCustomExercises(a){localStorage.setItem('il_custom',JSON.stringify(a))}
 function addCustomExercise(ex){const a=getCustomExercises();a.push(ex);saveCustomExercises(a)}
 function deleteCustomExercise(id){saveCustomExercises(getCustomExercises().filter(e=>e.id!==id))}
-function getRestDuration(){return parseInt(localStorage.getItem('il_rest')||'90')}
+function getRestDuration(){return parseInt(localStorage.getItem('il_rest')||'120')}
 function saveRestDuration(s){localStorage.setItem('il_rest',String(s))}
 function getActiveTab(exId){return localStorage.getItem('il_tab_'+exId)||'sets'}
 function setActiveTab(exId,tab){localStorage.setItem('il_tab_'+exId,tab)}
@@ -647,30 +669,101 @@ function findLibExByName(name){
 }
 
 // ═══════════════════════════════════════════════════════════
-// REST TIMER
+// REST TIMER  — fullscreen, background mini-bar, audio beep
 // ═══════════════════════════════════════════════════════════
-let restInterval=null,restRemaining=0,restTotal=0,restPaused=false;
+let restInterval=null,restRemaining=0,restTotal=0,restPaused=false,restMini=false;
 const CIRC=521;
+
+// Web Audio beep — triple beep on completion
+function playBeep(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,0.18,0.36].forEach(delay=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.type='sine';osc.frequency.value=880;
+      gain.gain.setValueAtTime(0,ctx.currentTime+delay);
+      gain.gain.linearRampToValueAtTime(0.6,ctx.currentTime+delay+0.01);
+      gain.gain.linearRampToValueAtTime(0,ctx.currentTime+delay+0.15);
+      osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+0.2);
+    });
+  }catch(e){}
+  // Also try Web Notifications if permission granted
+  if(Notification.permission==='granted'){
+    new Notification('Iron Log',{body:'Rest complete — time to lift! 💪',icon:'',silent:false});
+  }
+}
+
+// Request notification permission on first rest start
+function requestNotifPermission(){
+  if(typeof Notification!=='undefined'&&Notification.permission==='default'){
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+
 function openRest(s){
-  restTotal=s||getRestDuration();restRemaining=restTotal;restPaused=false;
+  requestNotifPermission();
+  restTotal=s||getRestDuration();restRemaining=restTotal;restPaused=false;restMini=false;
   document.getElementById('rest-overlay').classList.add('open');
+  document.getElementById('rest-mini').style.display='none';
   document.getElementById('rest-pause-btn').textContent='⏸ PAUSE';
   updateRestUI();clearInterval(restInterval);
-  restInterval=setInterval(()=>{
-    if(restPaused)return;restRemaining--;
-    if(restRemaining<=0){closeRest();return;}
-    updateRestUI();
-  },1000);
+  restInterval=setInterval(restTick,1000);
   const C=currentMeta().color;
   document.getElementById('rest-arc').style.stroke=C;
   document.getElementById('rest-skip-btn').style.background=C;
+  document.getElementById('rest-mini-fill').style.background=C;
 }
+
+function restTick(){
+  if(restPaused)return;
+  restRemaining--;
+  if(restRemaining<=0){
+    playBeep();
+    closeRest();
+    return;
+  }
+  updateRestUI();
+}
+
 function updateRestUI(){
-  document.getElementById('rest-secs').textContent=restRemaining;
-  document.getElementById('rest-arc').style.strokeDashoffset=String(CIRC*(1-restRemaining/restTotal));
+  const pct=restRemaining/restTotal;
+  // fullscreen
+  const secsEl=document.getElementById('rest-secs');
+  if(secsEl)secsEl.textContent=restRemaining;
+  const arcEl=document.getElementById('rest-arc');
+  if(arcEl)arcEl.style.strokeDashoffset=String(CIRC*(1-pct));
+  // mini bar
+  const miniSecs=document.getElementById('rest-mini-secs');
+  if(miniSecs)miniSecs.textContent=fmtTime(restRemaining);
+  const miniFill=document.getElementById('rest-mini-fill');
+  if(miniFill)miniFill.style.width=(pct*100)+'%';
 }
-function closeRest(){clearInterval(restInterval);document.getElementById('rest-overlay').classList.remove('open')}
-function toggleRestPause(){restPaused=!restPaused;document.getElementById('rest-pause-btn').textContent=restPaused?'▶ RESUME':'⏸ PAUSE'}
+
+function closeRest(){
+  clearInterval(restInterval);
+  document.getElementById('rest-overlay').classList.remove('open');
+  document.getElementById('rest-mini').style.display='none';
+  restMini=false;
+}
+
+function minimizeRest(){
+  document.getElementById('rest-overlay').classList.remove('open');
+  document.getElementById('rest-mini').style.display='block';
+  restMini=true;
+}
+
+function maximizeRest(){
+  document.getElementById('rest-mini').style.display='none';
+  document.getElementById('rest-overlay').classList.add('open');
+  restMini=false;
+}
+
+function toggleRestPause(){
+  restPaused=!restPaused;
+  document.getElementById('rest-pause-btn').textContent=restPaused?'▶ RESUME':'⏸ PAUSE';
+}
 function adjustRest(d){restRemaining=Math.max(5,restRemaining+d);restTotal=Math.max(restTotal,restRemaining);updateRestUI()}
 function setRestTime(s){closeRest();openRest(s)}
 
@@ -1036,8 +1129,15 @@ function renderExCard(ex,xi,C){
           <div class="sets-header"><span>SET</span><span>PREV</span><span>LBS</span><span>${ex.reps===60?'SECS':'REPS'}</span><span>✓</span></div>
           ${rows}${histLine}
         </div>
-        ${goal?`<div style="padding:7px 12px;background:#0e0e0e;font-family:'DM Mono',monospace;font-size:10px;color:${C};letter-spacing:1px;border-top:1px solid #141414">🎯 GOAL: ${goal} LBS&nbsp;&nbsp;<button onclick="openPlateCalc(${goal})" style="background:transparent;border:none;color:#666;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer">🔧 PLATES</button></div>`:''}`;
-      } else {
+        <div style="padding:8px 12px;background:#0e0e0e;border-top:1px solid #141414;display:flex;align-items:center;gap:8px">
+          <span style="font-family:'DM Mono',monospace;font-size:9px;color:#444;letter-spacing:1.5px;white-space:nowrap">🎯 GOAL</span>
+          <input type="number" inputmode="decimal" placeholder="LBS" value="${goal}"
+            style="background:#1a1a1a;border:1px solid ${goal?C+'55':'#2a2a2a'};color:${goal?C:'#aaa'};padding:5px 8px;font-family:'DM Mono',monospace;font-size:12px;border-radius:3px;outline:none;text-align:center;width:80px;transition:border-color .2s"
+            onchange="saveGoal('${ex.id}',this.value?parseFloat(this.value):'');render()">
+          ${goal?`<span style="font-family:'DM Mono',monospace;font-size:10px;color:${C};letter-spacing:1px">${goal} LBS</span>
+          <button onclick="openPlateCalc(${goal})" style="margin-left:auto;padding:5px 9px;background:transparent;border:1px solid #333;border-radius:3px;color:#666;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px">🔧 PLATES</button>`
+          :`<span style="font-family:'DM Mono',monospace;font-size:9px;color:#333;letter-spacing:1px">NOT SET</span>`}
+        </div>`;      } else {
         // edit mode sets tab
         body+=`<div class="ex-config-wrap">
           <div class="ex-config-row">
