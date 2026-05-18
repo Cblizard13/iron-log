@@ -333,7 +333,7 @@ textarea{resize:none;font-family:'DM Mono',monospace}button{font-family:'Bebas N
 // EQUIPMENT & MUSCLE OPTIONS
 // ═══════════════════════════════════════════════════════════
 const EQ_OPTIONS=['Barbell','Bench + Barbell','Bench + Dumbbell','Barbell + Squat Rack','Dumbbell','Pulldown System','Landmine','Leg Extension Machine','Preacher Curl Bench','Bench','Bodyweight','Other'];
-const MUSCLE_OPTIONS={push:['CHEST','SHOULDERS','TRICEPS'],pull:['BACK','LATS','BICEPS'],legs:['QUADS','HAMSTRINGS','GLUTES','CALVES','CORE']};
+const MUSCLE_OPTIONS={push:['CHEST','SHOULDERS','TRICEPS'],pull:['BACK','LATS','BICEPS','TRAPS'],legs:['QUADS','HAMSTRINGS','GLUTES','CALVES','CORE']};
 
 // ═══════════════════════════════════════════════════════════
 // EXERCISE LIBRARY with descriptions
@@ -404,6 +404,18 @@ const LIBRARY = {
       {id:'lb_21s', name:'Barbell 21s',               eq:'Barbell',          desc:'21 reps split into three ranges: 7 lower half, 7 upper half, 7 full range.',steps:['Do 7 reps from the bottom to 90° (lower half).','Do 7 reps from 90° to top (upper half).','Do 7 full range reps to complete the set.']},
       {id:'lb_pcc', name:'Preacher Curl',             eq:'Preacher Curl Bench',desc:'The preacher bench isolates the bicep by bracing the upper arm, eliminating cheat movement.',steps:['Sit at preacher bench, upper arms flat on pad.','Hold barbell or dumbbells at full extension.','Curl up, don\'t let elbows flare.','Lower slowly to full extension each rep.']},
       {id:'lb_cbc', name:'Cable Bicep Curl',          eq:'Pulldown System',  desc:'Cable keeps constant tension throughout the full range of motion.',steps:['Stand facing cable machine, attach straight or EZ bar at low position.','Curl up, keeping elbows pinned at sides.','Squeeze at top.','Lower with resistance all the way.']},
+    ],
+    'TRAPS':[
+      {id:'lb_trp_bsh', name:'Barbell Shrug',            eq:'Barbell',         desc:'The foundational trap exercise. Heavy loading through shoulder elevation builds upper trap thickness and neck width.',steps:['Stand holding barbell in front of body, arms straight, overhand grip.','Elevate shoulders straight up toward ears as high as possible.','Hold at the top for a count, squeezing traps hard.','Lower slowly under control. No rolling — straight up and down.']},
+      {id:'lb_trp_dsh', name:'Dumbbell Shrug',           eq:'Dumbbell',        desc:'Dumbbell version of the shrug. Arms at sides allows a slightly longer range of motion and independent movement.',steps:['Stand holding dumbbells at your sides, arms straight.','Shrug shoulders straight up as high as possible.','Squeeze traps at the top for 1–2 seconds.','Lower under control. Avoid rolling the shoulders.']},
+      {id:'lb_trp_rsh', name:'Rack Pull',                eq:'Barbell + Squat Rack', desc:'A partial deadlift from just below or at knee height. Allows supramaximal loading to overload the traps and upper back.',steps:['Set safety bars in rack just below or at knee height.','Approach like a deadlift — bar over mid-foot, hip-width stance.','Grip just outside legs. Drive floor away, keeping chest up.','Lock out hips hard at the top, squeezing traps. Lower back to pins.']},
+      {id:'lb_trp_fsh', name:'Farmer\'s Carry',          eq:'Dumbbell',        desc:'Loaded carry that builds trap endurance, grip strength, and full upper back stability under sustained tension.',steps:['Pick up heavy dumbbells, one in each hand.','Stand tall, shoulders back and down, core braced.','Walk for a set distance or time, maintaining upright posture.','Set down with control. Rest and repeat.']},
+      {id:'lb_trp_bur', name:'Barbell Upright Row',      eq:'Barbell',         desc:'Compound pull that trains both the upper traps and medial delts simultaneously.',steps:['Stand holding barbell with an overhand grip, hands shoulder-width or slightly inside.','Pull bar straight up the body, elbows leading and flaring high.','Bar reaches upper chest or chin level at the top.','Lower slowly under control back to starting position.']},
+      {id:'lb_trp_dur', name:'Dumbbell Upright Row',     eq:'Dumbbell',        desc:'Dumbbell version of the upright row. The free movement of each arm reduces shoulder impingement risk.',steps:['Hold dumbbells in front of your thighs, overhand grip.','Pull both dumbbells upward, elbows rising high and wide.','Dumbbells reach upper chest level.','Lower with control.']},
+      {id:'lb_trp_fpr', name:'Face Pull (High Cable)',   eq:'Pulldown System', desc:'Hits the rear delts and upper traps while also training external shoulder rotation — essential for shoulder health.',steps:['Set cable pulley to face height or above. Attach rope.','Grip rope ends with both hands, step back.','Pull to forehead, elbows flaring high and wide.','Hands finish near ears, squeeze rear delts and traps.','Return slowly to full arm extension.']},
+      {id:'lb_trp_iss', name:'Incline Y-Raise',          eq:'Bench + Dumbbell',desc:'Prone exercise on an incline bench that isolates the lower traps and helps build the V-taper of the upper back.',steps:['Set bench to 30–45° incline. Lie face down, dumbbells hanging.','Raise both arms in a Y shape — angled 30° above shoulder line.','Squeeze lower traps and shoulder blades at the top.','Lower slowly back to start.']},
+      {id:'lb_trp_lms', name:'Landmine Shrug',           eq:'Landmine',        desc:'Holding the end of a landmine bar and shrugging provides a natural arc that trains the traps through a rotational path.',steps:['Anchor barbell in landmine. Stand facing the end.','Hold bar end with both hands, arms hanging in front.','Shrug shoulders straight up, letting the bar arc slightly.','Squeeze at top and lower slowly.']},
+      {id:'lb_trp_csh', name:'Cable Shrug',              eq:'Pulldown System', desc:'Cable version of the shrug keeps constant tension on the traps through the full range, unlike free weights which lose tension at the top.',steps:['Attach straight bar or rope to low cable.','Stand tall holding the handle, arms straight in front.','Shrug shoulders straight up toward ears.','Hold briefly at top. Lower with resistance.']},
     ],
   }},
   legs:{label:'LEGS',color:'#32CD32',groups:{
@@ -1266,6 +1278,299 @@ function renderLibrary(){
   return html;
 }
 
+// ── MUSCLE DIAGRAM DATA ──
+// Each exercise maps to primary + secondary muscle IDs
+// SVG path IDs match the body SVG below
+const MUSCLE_MAP={
+  // PUSH — CHEST
+  'lb_bp':  {p:['chest-l','chest-r'],s:['front-delt-l','front-delt-r','tricep-l','tricep-r']},
+  'lb_dbp': {p:['chest-l','chest-r'],s:['front-delt-l','front-delt-r','tricep-l','tricep-r']},
+  'lb_ip':  {p:['upper-chest-l','upper-chest-r'],s:['front-delt-l','front-delt-r','tricep-l','tricep-r']},
+  'lb_idb': {p:['upper-chest-l','upper-chest-r'],s:['front-delt-l','front-delt-r','tricep-l','tricep-r']},
+  'lb_dp':  {p:['lower-chest-l','lower-chest-r'],s:['front-delt-l','front-delt-r','tricep-l','tricep-r']},
+  'lb_fly': {p:['chest-l','chest-r'],s:['front-delt-l','front-delt-r']},
+  'lb_ifl': {p:['upper-chest-l','upper-chest-r'],s:['front-delt-l','front-delt-r']},
+  'lb_cgb': {p:['tricep-l','tricep-r'],s:['chest-l','chest-r','front-delt-l','front-delt-r']},
+  'lb_lmc': {p:['chest-l','chest-r'],s:['front-delt-l','front-delt-r','tricep-l','tricep-r']},
+  'lb_pp':  {p:['chest-l','chest-r'],s:['front-delt-l','front-delt-r','tricep-l','tricep-r']},
+  // PUSH — SHOULDERS
+  'lb_ohp': {p:['front-delt-l','front-delt-r','side-delt-l','side-delt-r'],s:['tricep-l','tricep-r','upper-chest-l','upper-chest-r']},
+  'lb_sdp': {p:['front-delt-l','front-delt-r','side-delt-l','side-delt-r'],s:['tricep-l','tricep-r']},
+  'lb_lr':  {p:['side-delt-l','side-delt-r'],s:['trap-l','trap-r']},
+  'lb_fpr': {p:['front-delt-l','front-delt-r'],s:['upper-chest-l','upper-chest-r']},
+  'lb_fdr': {p:['front-delt-l','front-delt-r'],s:[]},
+  'lb_cfp': {p:['rear-delt-l','rear-delt-r'],s:['trap-l','trap-r','side-delt-l','side-delt-r']},
+  'lb_arn': {p:['front-delt-l','front-delt-r','side-delt-l','side-delt-r'],s:['tricep-l','tricep-r']},
+  'lb_usr': {p:['side-delt-l','side-delt-r','trap-l','trap-r'],s:['front-delt-l','front-delt-r','bicep-l','bicep-r']},
+  'lb_lmp': {p:['front-delt-l','front-delt-r'],s:['chest-l','chest-r','tricep-l','tricep-r']},
+  'lb_lm2': {p:['front-delt-l','front-delt-r','side-delt-l','side-delt-r'],s:['chest-l','chest-r','oblique-l','oblique-r']},
+  // PUSH — TRICEPS
+  'lb_skc': {p:['tricep-l','tricep-r'],s:[]},
+  'lb_tpd': {p:['tricep-l','tricep-r'],s:[]},
+  'lb_roe': {p:['tricep-l','tricep-r'],s:[]},
+  'lb_ohe': {p:['tricep-l','tricep-r'],s:[]},
+  'lb_kbk': {p:['tricep-l','tricep-r'],s:[]},
+  'lb_cdp': {p:['tricep-l','tricep-r'],s:[]},
+  'lb_dip': {p:['tricep-l','tricep-r'],s:['chest-l','chest-r','front-delt-l','front-delt-r']},
+  // PULL — BACK
+  'lb_dl':  {p:['lower-back-l','lower-back-r','glute-l','glute-r'],s:['trap-l','trap-r','lat-l','lat-r','hamstring-l','hamstring-r']},
+  'lb_rdl': {p:['hamstring-l','hamstring-r','lower-back-l','lower-back-r'],s:['glute-l','glute-r','lat-l','lat-r']},
+  'lb_bor': {p:['lat-l','lat-r','mid-back-l','mid-back-r'],s:['bicep-l','bicep-r','rear-delt-l','rear-delt-r']},
+  'lb_ubr': {p:['lat-l','lat-r','lower-lat-l','lower-lat-r'],s:['bicep-l','bicep-r']},
+  'lb_dbr': {p:['lat-l','lat-r','mid-back-l','mid-back-r'],s:['bicep-l','bicep-r','rear-delt-l','rear-delt-r']},
+  'lb_scr': {p:['mid-back-l','mid-back-r','lat-l','lat-r'],s:['bicep-l','bicep-r','rear-delt-l','rear-delt-r']},
+  'lb_sal': {p:['lat-l','lat-r','lower-lat-l','lower-lat-r'],s:[]},
+  'lb_shg': {p:['trap-l','trap-r'],s:[]},
+  'lb_lmr': {p:['lat-l','lat-r','mid-back-l','mid-back-r'],s:['bicep-l','bicep-r','rear-delt-l','rear-delt-r']},
+  'lb_lmt': {p:['mid-back-l','mid-back-r','lat-l','lat-r'],s:['bicep-l','bicep-r','lower-back-l','lower-back-r']},
+  // PULL — LATS
+  'lb_wlp': {p:['lat-l','lat-r'],s:['bicep-l','bicep-r','mid-back-l','mid-back-r']},
+  'lb_clp': {p:['lower-lat-l','lower-lat-r','lat-l','lat-r'],s:['bicep-l','bicep-r']},
+  'lb_rvp': {p:['lat-l','lat-r','lower-lat-l','lower-lat-r'],s:['bicep-l','bicep-r']},
+  'lb_pu':  {p:['lat-l','lat-r'],s:['bicep-l','bicep-r','mid-back-l','mid-back-r']},
+  'lb_cpu': {p:['lat-l','lat-r','bicep-l','bicep-r'],s:['mid-back-l','mid-back-r']},
+  // PULL — BICEPS
+  'lb_bbc': {p:['bicep-l','bicep-r'],s:['forearm-l','forearm-r']},
+  'lb_dbc': {p:['bicep-l','bicep-r'],s:['forearm-l','forearm-r']},
+  'lb_hmc': {p:['bicep-l','bicep-r'],s:['forearm-l','forearm-r']},
+  'lb_inc': {p:['bicep-l','bicep-r'],s:[]},
+  'lb_rvc': {p:['forearm-l','forearm-r'],s:['bicep-l','bicep-r']},
+  'lb_con': {p:['bicep-l','bicep-r'],s:[]},
+  'lb_21s': {p:['bicep-l','bicep-r'],s:['forearm-l','forearm-r']},
+  'lb_pcc': {p:['bicep-l','bicep-r'],s:['forearm-l','forearm-r']},
+  'lb_cbc': {p:['bicep-l','bicep-r'],s:['forearm-l','forearm-r']},
+  // LEGS — QUADS
+  'lb_bsq': {p:['quad-l','quad-r'],s:['glute-l','glute-r','hamstring-l','hamstring-r','lower-back-l','lower-back-r']},
+  'lb_fsq': {p:['quad-l','quad-r'],s:['glute-l','glute-r','lower-back-l','lower-back-r']},
+  'lb_gsq': {p:['quad-l','quad-r'],s:['glute-l','glute-r']},
+  'lb_bln': {p:['quad-l','quad-r'],s:['glute-l','glute-r','hamstring-l','hamstring-r']},
+  'lb_dln': {p:['quad-l','quad-r'],s:['glute-l','glute-r','hamstring-l','hamstring-r']},
+  'lb_bss': {p:['quad-l','quad-r','glute-l','glute-r'],s:['hamstring-l','hamstring-r']},
+  'lb_lex': {p:['quad-l','quad-r'],s:[]},
+  'lb_lmsl':{p:['quad-l','quad-r'],s:['glute-l','glute-r','core-upper']},
+  // LEGS — HAMSTRINGS
+  'lb_srdl':{p:['hamstring-l','hamstring-r'],s:['lower-back-l','lower-back-r','glute-l','glute-r']},
+  'lb_sdl': {p:['hamstring-l','hamstring-r','glute-l','glute-r'],s:['lower-back-l','lower-back-r','quad-l','quad-r']},
+  'lb_cpt': {p:['hamstring-l','hamstring-r','glute-l','glute-r'],s:['lower-back-l','lower-back-r']},
+  'lb_glb': {p:['hamstring-l','hamstring-r','lower-back-l','lower-back-r'],s:['glute-l','glute-r']},
+  'lb_nrd': {p:['hamstring-l','hamstring-r'],s:[]},
+  // LEGS — GLUTES
+  'lb_hbt': {p:['glute-l','glute-r'],s:['hamstring-l','hamstring-r','quad-l','quad-r']},
+  'lb_kbd': {p:['glute-l','glute-r'],s:['hamstring-l','hamstring-r']},
+  'lb_stp': {p:['glute-l','glute-r','quad-l','quad-r'],s:['hamstring-l','hamstring-r']},
+  // LEGS — CALVES
+  'lb_src': {p:['calf-l','calf-r'],s:['soleus-l','soleus-r']},
+  'lb_scc': {p:['soleus-l','soleus-r'],s:['calf-l','calf-r']},
+  'lb_dcc': {p:['calf-l','calf-r'],s:['soleus-l','soleus-r']},
+  'lb_ccc': {p:['calf-l','calf-r'],s:['soleus-l','soleus-r']},
+  // LEGS — CORE
+  'lb_plk': {p:['core-upper','core-lower'],s:['oblique-l','oblique-r','lower-back-l','lower-back-r']},
+  'lb_hkr': {p:['core-lower'],s:['core-upper','hip-flexor-l','hip-flexor-r']},
+  'lb_crn': {p:['core-upper','core-lower'],s:['oblique-l','oblique-r']},
+  'lb_abr': {p:['core-upper','core-lower'],s:['oblique-l','oblique-r','lower-back-l','lower-back-r']},
+  'lb_rus': {p:['oblique-l','oblique-r'],s:['core-upper','core-lower']},
+  'lb_lrl': {p:['core-lower','hip-flexor-l','hip-flexor-r'],s:['core-upper']},
+  'lb_lmro':{p:['oblique-l','oblique-r'],s:['core-upper','core-lower','side-delt-l','side-delt-r']},
+  'lb_lml': {p:['oblique-l','oblique-r'],s:['side-delt-l','side-delt-r']},
+  // TRAPS
+  'lb_trp_bsh': {p:['trap-l','trap-r'],s:['rear-delt-l','rear-delt-r']},
+  'lb_trp_dsh': {p:['trap-l','trap-r'],s:['rear-delt-l','rear-delt-r']},
+  'lb_trp_rsh': {p:['trap-l','trap-r','mid-back-l','mid-back-r'],s:['lower-back-l','lower-back-r','lat-l','lat-r']},
+  'lb_trp_fsh': {p:['trap-l','trap-r'],s:['forearm-l','forearm-r','rear-delt-l','rear-delt-r']},
+  'lb_trp_bur': {p:['trap-l','trap-r','side-delt-l','side-delt-r'],s:['front-delt-l','front-delt-r','bicep-l','bicep-r']},
+  'lb_trp_dur': {p:['trap-l','trap-r','side-delt-l','side-delt-r'],s:['front-delt-l','front-delt-r','bicep-l','bicep-r']},
+  'lb_trp_fpr': {p:['rear-delt-l','rear-delt-r','trap-l','trap-r'],s:['side-delt-l','side-delt-r','mid-back-l','mid-back-r']},
+  'lb_trp_iss': {p:['trap-l','trap-r','mid-back-l','mid-back-r'],s:['rear-delt-l','rear-delt-r','lower-back-l','lower-back-r']},
+  'lb_trp_lms': {p:['trap-l','trap-r'],s:['rear-delt-l','rear-delt-r','forearm-l','forearm-r']},
+  'lb_trp_csh': {p:['trap-l','trap-r'],s:['rear-delt-l','rear-delt-r','forearm-l','forearm-r']},
+};
+
+// Build the full body SVG with highlighted muscles
+function buildMuscleSVG(exId,C){
+  const map=MUSCLE_MAP[exId]||{p:[],s:[]};
+  const primary=new Set(map.p);
+  const secondary=new Set(map.s);
+  const pColor=C;
+  const sColor=C+'88';
+  const baseColor='#1e1e1e';
+  const strokeColor='#2a2a2a';
+  const skinTone='#2a2020';
+
+  function mFill(id){
+    if(primary.has(id))return pColor;
+    if(secondary.has(id))return sColor;
+    return baseColor;
+  }
+  function mOpacity(id){
+    if(primary.has(id))return'1';
+    if(secondary.has(id))return'.8';
+    return'1';
+  }
+
+  // Front body SVG
+  const front=`<svg viewBox="0 0 120 280" style="width:110px;height:260px">
+    <!-- HEAD -->
+    <ellipse cx="60" cy="18" rx="14" ry="16" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- NECK -->
+    <rect x="54" y="31" width="12" height="10" rx="3" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- TRAP LEFT -->
+    <path d="M46 38 Q36 38 32 50 L46 52 Z" fill="${mFill('trap-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('trap-l')}"/>
+    <!-- TRAP RIGHT -->
+    <path d="M74 38 Q84 38 88 50 L74 52 Z" fill="${mFill('trap-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('trap-r')}"/>
+    <!-- FRONT DELT LEFT -->
+    <ellipse cx="35" cy="58" rx="9" ry="10" fill="${mFill('front-delt-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('front-delt-l')}"/>
+    <!-- FRONT DELT RIGHT -->
+    <ellipse cx="85" cy="58" rx="9" ry="10" fill="${mFill('front-delt-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('front-delt-r')}"/>
+    <!-- SIDE DELT LEFT -->
+    <ellipse cx="30" cy="62" rx="7" ry="8" fill="${mFill('side-delt-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('side-delt-l')}"/>
+    <!-- SIDE DELT RIGHT -->
+    <ellipse cx="90" cy="62" rx="7" ry="8" fill="${mFill('side-delt-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('side-delt-r')}"/>
+    <!-- UPPER CHEST LEFT -->
+    <path d="M46 44 Q48 44 60 46 L60 56 Q48 58 44 55 Z" fill="${mFill('upper-chest-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('upper-chest-l')}"/>
+    <!-- UPPER CHEST RIGHT -->
+    <path d="M74 44 Q72 44 60 46 L60 56 Q72 58 76 55 Z" fill="${mFill('upper-chest-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('upper-chest-r')}"/>
+    <!-- CHEST LEFT -->
+    <path d="M44 55 Q48 58 60 60 L60 74 Q46 76 42 68 Z" fill="${mFill('chest-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('chest-l')}"/>
+    <!-- CHEST RIGHT -->
+    <path d="M76 55 Q72 58 60 60 L60 74 Q74 76 78 68 Z" fill="${mFill('chest-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('chest-r')}"/>
+    <!-- LOWER CHEST LEFT -->
+    <path d="M42 68 Q46 76 60 78 L60 82 Q44 82 41 74 Z" fill="${mFill('lower-chest-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lower-chest-l')}"/>
+    <!-- LOWER CHEST RIGHT -->
+    <path d="M78 68 Q74 76 60 78 L60 82 Q76 82 79 74 Z" fill="${mFill('lower-chest-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lower-chest-r')}"/>
+    <!-- BICEP LEFT -->
+    <path d="M27 68 Q23 72 22 84 L30 84 Q31 74 34 68 Z" fill="${mFill('bicep-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('bicep-l')}"/>
+    <!-- BICEP RIGHT -->
+    <path d="M93 68 Q97 72 98 84 L90 84 Q89 74 86 68 Z" fill="${mFill('bicep-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('bicep-r')}"/>
+    <!-- FOREARM LEFT -->
+    <path d="M22 84 Q20 96 21 108 L29 108 Q30 96 30 84 Z" fill="${mFill('forearm-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('forearm-l')}"/>
+    <!-- FOREARM RIGHT -->
+    <path d="M98 84 Q100 96 99 108 L91 108 Q90 96 90 84 Z" fill="${mFill('forearm-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('forearm-r')}"/>
+    <!-- CORE UPPER (abs top) -->
+    <path d="M44 82 Q46 82 60 82 L60 104 Q46 104 43 100 Z" fill="${mFill('core-upper')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('core-upper')}"/>
+    <path d="M76 82 Q74 82 60 82 L60 104 Q74 104 77 100 Z" fill="${mFill('core-upper')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('core-upper')}"/>
+    <!-- CORE LOWER (abs lower) -->
+    <path d="M43 100 Q46 104 60 106 L60 118 Q46 118 42 114 Z" fill="${mFill('core-lower')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('core-lower')}"/>
+    <path d="M77 100 Q74 104 60 106 L60 118 Q74 118 78 114 Z" fill="${mFill('core-lower')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('core-lower')}"/>
+    <!-- OBLIQUE LEFT -->
+    <path d="M40 90 Q37 100 39 112 L44 110 Q43 100 43 88 Z" fill="${mFill('oblique-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('oblique-l')}"/>
+    <!-- OBLIQUE RIGHT -->
+    <path d="M80 90 Q83 100 81 112 L76 110 Q77 100 77 88 Z" fill="${mFill('oblique-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('oblique-r')}"/>
+    <!-- HIP FLEXOR LEFT -->
+    <path d="M42 114 Q46 118 57 120 L56 130 Q44 130 41 122 Z" fill="${mFill('hip-flexor-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('hip-flexor-l')}"/>
+    <!-- HIP FLEXOR RIGHT -->
+    <path d="M78 114 Q74 118 63 120 L64 130 Q76 130 79 122 Z" fill="${mFill('hip-flexor-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('hip-flexor-r')}"/>
+    <!-- QUAD LEFT -->
+    <path d="M41 128 Q40 148 41 168 L54 168 Q56 148 57 128 Z" fill="${mFill('quad-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('quad-l')}"/>
+    <!-- QUAD RIGHT -->
+    <path d="M79 128 Q80 148 79 168 L66 168 Q64 148 63 128 Z" fill="${mFill('quad-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('quad-r')}"/>
+    <!-- CALF LEFT (front visible) -->
+    <path d="M42 196 Q41 216 43 236 L52 236 Q53 216 53 196 Z" fill="${mFill('calf-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('calf-l')}"/>
+    <!-- CALF RIGHT (front visible) -->
+    <path d="M78 196 Q79 216 77 236 L68 236 Q67 216 67 196 Z" fill="${mFill('calf-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('calf-r')}"/>
+    <!-- SHIN LEFT -->
+    <path d="M53 196 Q55 216 54 236 L58 236 Q59 216 57 196 Z" fill="${baseColor}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- SHIN RIGHT -->
+    <path d="M67 196 Q65 216 66 236 L62 236 Q61 216 63 196 Z" fill="${baseColor}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- KNEE LEFT -->
+    <ellipse cx="47" cy="183" rx="10" ry="9" fill="${baseColor}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- KNEE RIGHT -->
+    <ellipse cx="73" cy="183" rx="10" ry="9" fill="${baseColor}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- FOOT LEFT -->
+    <ellipse cx="47" cy="242" rx="10" ry="5" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- FOOT RIGHT -->
+    <ellipse cx="73" cy="242" rx="10" ry="5" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- ARMS OUTLINE LEFT -->
+    <path d="M27 68 Q22 76 21 108 L29 108 Q30 96 30 84 Q34 68 35 66" fill="none" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- ARMS OUTLINE RIGHT -->
+    <path d="M93 68 Q98 76 99 108 L91 108 Q90 96 90 84 Q86 68 85 66" fill="none" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- HAND LEFT -->
+    <ellipse cx="21" cy="114" rx="6" ry="8" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- HAND RIGHT -->
+    <ellipse cx="99" cy="114" rx="6" ry="8" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- LABEL -->
+    <text x="60" y="270" text-anchor="middle" font-family="monospace" font-size="8" fill="#555" letter-spacing="1">FRONT</text>
+  </svg>`;
+
+  // Back body SVG
+  const back=`<svg viewBox="0 0 120 280" style="width:110px;height:260px">
+    <!-- HEAD -->
+    <ellipse cx="60" cy="18" rx="14" ry="16" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- NECK -->
+    <rect x="54" y="31" width="12" height="10" rx="3" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- TRAP LEFT (back) -->
+    <path d="M46 38 Q38 42 34 60 L50 62 Q50 50 54 42 Z" fill="${mFill('trap-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('trap-l')}"/>
+    <!-- TRAP RIGHT (back) -->
+    <path d="M74 38 Q82 42 86 60 L70 62 Q70 50 66 42 Z" fill="${mFill('trap-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('trap-r')}"/>
+    <!-- REAR DELT LEFT -->
+    <ellipse cx="33" cy="62" rx="10" ry="9" fill="${mFill('rear-delt-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('rear-delt-l')}"/>
+    <!-- REAR DELT RIGHT -->
+    <ellipse cx="87" cy="62" rx="10" ry="9" fill="${mFill('rear-delt-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('rear-delt-r')}"/>
+    <!-- SIDE DELT LEFT -->
+    <ellipse cx="27" cy="64" rx="7" ry="7" fill="${mFill('side-delt-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('side-delt-l')}"/>
+    <!-- SIDE DELT RIGHT -->
+    <ellipse cx="93" cy="64" rx="7" ry="7" fill="${mFill('side-delt-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('side-delt-r')}"/>
+    <!-- LAT LEFT -->
+    <path d="M38 68 Q32 80 34 100 L50 98 Q50 82 46 68 Z" fill="${mFill('lat-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lat-l')}"/>
+    <!-- LAT RIGHT -->
+    <path d="M82 68 Q88 80 86 100 L70 98 Q70 82 74 68 Z" fill="${mFill('lat-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lat-r')}"/>
+    <!-- MID BACK LEFT -->
+    <path d="M50 62 Q50 82 50 98 L58 98 L58 62 Z" fill="${mFill('mid-back-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('mid-back-l')}"/>
+    <!-- MID BACK RIGHT -->
+    <path d="M70 62 Q70 82 70 98 L62 98 L62 62 Z" fill="${mFill('mid-back-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('mid-back-r')}"/>
+    <!-- LOWER LAT LEFT -->
+    <path d="M34 100 Q34 116 40 122 L52 118 Q50 104 50 98 Z" fill="${mFill('lower-lat-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lower-lat-l')}"/>
+    <!-- LOWER LAT RIGHT -->
+    <path d="M86 100 Q86 116 80 122 L68 118 Q70 104 70 98 Z" fill="${mFill('lower-lat-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lower-lat-r')}"/>
+    <!-- LOWER BACK LEFT -->
+    <path d="M50 98 Q50 116 52 126 L59 126 L58 98 Z" fill="${mFill('lower-back-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lower-back-l')}"/>
+    <!-- LOWER BACK RIGHT -->
+    <path d="M70 98 Q70 116 68 126 L61 126 L62 98 Z" fill="${mFill('lower-back-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('lower-back-r')}"/>
+    <!-- TRICEP LEFT -->
+    <path d="M26 68 Q22 80 22 96 L30 96 Q32 82 34 70 Z" fill="${mFill('tricep-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('tricep-l')}"/>
+    <!-- TRICEP RIGHT -->
+    <path d="M94 68 Q98 80 98 96 L90 96 Q88 82 86 70 Z" fill="${mFill('tricep-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('tricep-r')}"/>
+    <!-- FOREARM BACK LEFT -->
+    <path d="M22 96 Q20 108 21 118 L29 118 Q30 108 30 96 Z" fill="${mFill('forearm-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('forearm-l')}"/>
+    <!-- FOREARM BACK RIGHT -->
+    <path d="M98 96 Q100 108 99 118 L91 118 Q90 108 90 96 Z" fill="${mFill('forearm-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('forearm-r')}"/>
+    <!-- HAND LEFT -->
+    <ellipse cx="21" cy="124" rx="6" ry="8" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- HAND RIGHT -->
+    <ellipse cx="99" cy="124" rx="6" ry="8" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- GLUTE LEFT -->
+    <path d="M40 126 Q40 148 44 158 L58 156 Q58 140 57 126 Z" fill="${mFill('glute-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('glute-l')}"/>
+    <!-- GLUTE RIGHT -->
+    <path d="M80 126 Q80 148 76 158 L62 156 Q62 140 63 126 Z" fill="${mFill('glute-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('glute-r')}"/>
+    <!-- HAMSTRING LEFT -->
+    <path d="M44 158 Q43 178 44 196 L56 196 Q57 178 58 158 Z" fill="${mFill('hamstring-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('hamstring-l')}"/>
+    <!-- HAMSTRING RIGHT -->
+    <path d="M76 158 Q77 178 76 196 L64 196 Q63 178 62 158 Z" fill="${mFill('hamstring-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('hamstring-r')}"/>
+    <!-- CALF LEFT (back) -->
+    <path d="M44 196 Q42 218 44 236 L55 236 Q55 218 56 196 Z" fill="${mFill('calf-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('calf-l')}"/>
+    <!-- CALF RIGHT (back) -->
+    <path d="M76 196 Q78 218 76 236 L65 236 Q65 218 64 196 Z" fill="${mFill('calf-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('calf-r')}"/>
+    <!-- SOLEUS LEFT -->
+    <path d="M55 196 Q56 218 55 236 L60 236 L60 196 Z" fill="${mFill('soleus-l')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('soleus-l')}"/>
+    <!-- SOLEUS RIGHT -->
+    <path d="M65 196 Q64 218 65 236 L60 236 L60 196 Z" fill="${mFill('soleus-r')}" stroke="${strokeColor}" stroke-width="1" opacity="${mOpacity('soleus-r')}"/>
+    <!-- FOOT LEFT -->
+    <ellipse cx="47" cy="240" rx="10" ry="5" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- FOOT RIGHT -->
+    <ellipse cx="73" cy="240" rx="10" ry="5" fill="${skinTone}" stroke="${strokeColor}" stroke-width="1"/>
+    <!-- LABEL -->
+    <text x="60" y="270" text-anchor="middle" font-family="monospace" font-size="8" fill="#555" letter-spacing="1">BACK</text>
+  </svg>`;
+
+  return`<div style="display:flex;justify-content:center;gap:16px;padding:12px 0;background:#0a0a0a;border-radius:8px;margin-bottom:4px">
+    ${front}${back}
+  </div>
+  <div style="display:flex;gap:14px;justify-content:center;margin-top:6px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:${pColor}"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:#888;letter-spacing:1px">PRIMARY</span></div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:${sColor}"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:#888;letter-spacing:1px">SECONDARY</span></div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:${baseColor};border:1px solid #333"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:#888;letter-spacing:1px">NOT TARGETED</span></div>
+  </div>`;
+}
+
 // ── EXERCISE DETAIL ──
 function renderExDetail(){
   const {name,cat}=state.libDetail;
@@ -1296,17 +1601,38 @@ function renderExDetail(){
     </div>`;
   }).join(''):`<div style="font-family:'DM Mono',monospace;font-size:10px;color:#333;text-align:center;padding:12px;letter-spacing:2px">NO HISTORY YET</div>`;
 
+  const ytQuery=encodeURIComponent(name+' proper form technique');
+  const ytUrl=`https://www.youtube.com/results?search_query=${ytQuery}`;
+
+  const diagramHtml=MUSCLE_MAP[ex.id]?buildMuscleSVG(ex.id,C):'';
+
   return`
     <div class="detail-back" onclick="closeExDetail()">‹&nbsp;&nbsp;BACK TO LIBRARY</div>
     <div class="detail-hero">
-      <div class="detail-emoji">${emo}</div>
       <div class="detail-name">${name.toUpperCase()}</div>
       <div class="detail-meta-row">
         <span class="detail-tag" style="background:${C}22;color:${C}">${cat.toUpperCase()}</span>
         <span class="detail-tag" style="background:#ffffff0d;color:#888">${ex.eq.toUpperCase()}</span>
       </div>
-      ${ex.desc?`<div style="font-family:'DM Mono',monospace;font-size:11px;color:#aaa;line-height:1.6;letter-spacing:.5px">${ex.desc}</div>`:''}
+      ${ex.desc?`<div style="font-family:'DM Mono',monospace;font-size:11px;color:#aaa;line-height:1.6;letter-spacing:.5px;margin-top:8px">${ex.desc}</div>`:''}
     </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title" style="color:${C}">💪&nbsp;MUSCLE DIAGRAM</div>
+      ${diagramHtml||`<div style="font-family:'DM Mono',monospace;font-size:10px;color:#333;text-align:center;padding:12px;letter-spacing:2px">NO DIAGRAM AVAILABLE</div>`}
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title" style="color:${C}">🎬&nbsp;VIDEO DEMO</div>
+      <a href="${ytUrl}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:#1a1a1a;border:1px solid #ff000044;border-radius:6px;text-decoration:none;transition:background .15s" ontouchstart="this.style.background='#221010'" ontouchend="this.style.background='#1a1a1a'">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="#ff0000"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/><path d="M9.8 15.4V8.6l6.2 3.4-6.2 3.4z" fill="#fff"/></svg>
+        <div>
+          <div style="font-size:15px;color:#fff;letter-spacing:2px">WATCH ON YOUTUBE</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:#666;letter-spacing:1px;margin-top:2px">${name.toUpperCase()} FORM &amp; TECHNIQUE</div>
+        </div>
+      </a>
+    </div>
+
     <div class="detail-section">
       <div class="detail-section-title" style="color:${C}">📋&nbsp;HOW TO PERFORM</div>
       ${stepsHtml}
